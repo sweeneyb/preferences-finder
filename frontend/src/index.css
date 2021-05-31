@@ -6,6 +6,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #f5f5f5;
+  text-size-adjust: none;
+  -webkit-text-size-adjust: none;
   
 }
 
@@ -43,7 +45,6 @@ code {
 }
 
 .button {
-  background-color: #4CAF50; /* Green */
   border: none;
   color: white;
   padding: 20px;
@@ -53,7 +54,25 @@ code {
   font-size: 16px;
   margin: 4px 2px;
   cursor: pointer;
+
 }
+
+@media only screen and (max-width: 660px) {
+  .button {
+    color: orange;
+    width: 45%;
+  }
+  .no::before  {
+    content:  "👎";
+  }
+  .yes::before {
+    content: "👍";
+  }
+  .buttonText {
+    display: none;
+  }
+}
+
 
 .bottom-left {
   position: absolute;
