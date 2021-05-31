@@ -11,7 +11,7 @@
   },
   "hosting": {
     "predeploy": [
-      "npm --prefix frontent run build"
+      "npm --prefix frontend run build"
     ],
     "public": "frontend/build",
     "ignore": [
