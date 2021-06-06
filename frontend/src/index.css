@@ -18,7 +18,7 @@ code {
 
 .center {
   margin: auto;
-  width: 65%;
+  width: 80%;
   padding: 10px;
 }
 
@@ -79,6 +79,10 @@ code {
    bottom: 8px;
    left: 16px;
    background-color:rgba(255, 255, 255,.2);
+ }
+
+ .center {
+   width: 55%;
  }
 }
 
