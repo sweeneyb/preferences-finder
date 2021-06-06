@@ -48,11 +48,58 @@ function getRandomInt(max: number) {
   return Math.floor(Math.random() * max);
 }
 
-// curl http://localhost:5001/preference-finder/us-central1/api/api/v1/work/random
-app.get("/work/random", async (req, res) =>
+// curl http://localhost:5001/preference-finder/us-central1/api/api/v1/works/random
+app.get("/works/random", async (req, res) =>
   res.send(works[getRandomInt(3)])
   // res.send("hi")
 );
+
+app.get("/works/all", async (req, res) =>
+  res.send(works)
+  // res.send("hi")
+);
+
+type Rating = {
+  image: string,
+  user: string,
+  rating: number
+}
+
+function validateNumber(input: string): number {
+  return parseInt(input)
+}
+
+function validateRating(input: number): number {
+  if ( 0 <= input && input <= 5) {
+    return input
+  }
+  throw 'Parameter is not within acceptable ranges'
+}
+
+function validateString (input: string, fieldName: string): string {
+  const pattern = /^[\/\-\w\.]*$/
+  if( input.match(pattern)) {
+    return input
+  }
+  throw 'Parameter '+fieldName+' has unexpected characters'
+}
+
+// curl -id @request.json -H "Content-Type: application/json" http://localhost:5001/preference-finder/us-central1/api/api/v1/works/rate
+app.post("/works/rate/", async(req, res) => {
+  try {
+    var rating: Rating = { 
+      rating : validateRating(validateNumber(req.body.rating)),
+      user: validateString(req.body.user, "user"),
+      image: validateString( req.body.image, "image")
+    
+    }
+    console.log("past validation", rating)
+    res.sendStatus(200)
+  } catch (err) {
+    console.log(err)
+    res.sendStatus(400)
+  }
+});
 
 // add the path to receive request and
 // set json as bodyParser to process the body

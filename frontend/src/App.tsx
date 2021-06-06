@@ -1,5 +1,4 @@
-import React, {useState} from 'react';
-// import logo from './logo.svg';
+import React, { useState } from 'react';
 import './App.css';
 import { Card } from './components/Card'
 
@@ -30,21 +29,48 @@ function getRandomInt(max: number) {
   return Math.floor(Math.random() * max);
 }
 
+function sendMessage(rating: number, user: string|null, image: string) {
+  if (user === null) {
+    console.log("no user; not logging")
+    return;
+  }
+  fetch('/preference-finder/us-central1/api/api/v1/works/rate', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      "user": user,
+      "rating": rating,
+      "image": image
+    })
+  });
+}
 
 
 
 function App() {
-  const [work, setWork] = useState( works[getRandomInt(3)])
-  
+  const [work, setWork] = useState(works[getRandomInt(3)])
+
+  const params = new URLSearchParams(window.location.search)
+  const user = params.get('user')
+
   function dislike() {
     console.log("dislike")
+    sendMessage( 0, user, work.image)
     setWork(works[getRandomInt(3)])
   }
 
   function like() {
     console.log("like")
+    sendMessage(5, user, work.image)
     setWork(works[getRandomInt(3)])
   }
+
+  
+
+
 
   return (
     <div className="App">
