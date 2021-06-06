@@ -1,4 +1,5 @@
 import * as functions from "firebase-functions";
+import * as cors from "cors";
 
 // // Start writing Firebase Functions
 // // https://firebase.google.com/docs/functions/typescript
@@ -18,6 +19,9 @@ import * as bodyParser from "body-parser";
 // initialize express server
 const app = express();
 const main = express();
+// Automatically allow cross-origin requests
+app.use(cors({origin: "https://preference-finder.web.app"}));
+main.use(cors({origin: "https://preference-finder.web.app"}));
 
 interface Work {
   artist: string
@@ -66,38 +70,38 @@ type Rating = {
 }
 
 function validateNumber(input: string): number {
-  return parseInt(input)
+  return parseInt(input);
 }
 
 function validateRating(input: number): number {
   if ( 0 <= input && input <= 5) {
-    return input
+    return input;
   }
-  throw 'Parameter is not within acceptable ranges'
+  throw new Error("Parameter is not within acceptable ranges");
 }
 
-function validateString (input: string, fieldName: string): string {
-  const pattern = /^[\/\-\w\.]*$/
-  if( input.match(pattern)) {
-    return input
+function validateString(input: string, fieldName: string): string {
+  const pattern = /^[/\-\w.]*$/;
+  if (input.match(pattern)) {
+    return input;
   }
-  throw 'Parameter '+fieldName+' has unexpected characters'
+  throw new Error("Parameter "+fieldName+" has unexpected characters");
 }
 
 // curl -id @request.json -H "Content-Type: application/json" http://localhost:5001/preference-finder/us-central1/api/api/v1/works/rate
-app.post("/works/rate/", async(req, res) => {
+app.post("/works/rate/", async (req, res) => {
   try {
-    var rating: Rating = { 
-      rating : validateRating(validateNumber(req.body.rating)),
+    const rating: Rating = {
+      rating: validateRating(validateNumber(req.body.rating)),
       user: validateString(req.body.user, "user"),
-      image: validateString( req.body.image, "image")
-    
-    }
-    console.log("past validation", rating)
-    res.sendStatus(200)
+      image: validateString( req.body.image, "image"),
+
+    };
+    console.log("past validation", JSON.stringify(rating));
+    res.sendStatus(200);
   } catch (err) {
-    console.log(err)
-    res.sendStatus(400)
+    console.log(err);
+    res.sendStatus(400);
   }
 });
 

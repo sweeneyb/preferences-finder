@@ -34,7 +34,8 @@ function sendMessage(rating: number, user: string|null, image: string) {
     console.log("no user; not logging")
     return;
   }
-  fetch('/preference-finder/us-central1/api/api/v1/works/rate', {
+  fetch("https://us-central1-preference-finder.cloudfunctions.net/api/api/v1/works/rate", {
+  // fetch('/preference-finder/us-central1/api/api/v1/works/rate', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
