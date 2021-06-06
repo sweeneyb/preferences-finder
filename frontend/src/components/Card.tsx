@@ -4,6 +4,7 @@ import '../App.css';
 export type CardProps = {
   title: string,
   artist: string,
+  image: string,
   citation: string,
 }
 
@@ -19,7 +20,7 @@ export function Card (props: {cardProps: CardProps, cardCallbacks: CardCallbacks
    
       <div className="card center rounded">
       <div style={{'position': "relative"}}>
-      <img src="/images/canvas-oil-La-Grande-Jatte-Georges-Seurat-1884.jpg" alt="Work" className="rounded" style={{"width": "100%"}} />
+      <img src={props.cardProps.image} alt="Work" className="rounded" style={{"width": "100%"}} />
       <div className="bottom-left rounded">
         <h4>
           <b className="rounded" >{props.cardProps.artist}</b>
