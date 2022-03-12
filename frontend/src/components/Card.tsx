@@ -31,10 +31,10 @@ export function Card (props: {cardProps: CardProps, cardCallbacks: CardCallbacks
       </div>
 
       <div className="center" style={{"textAlign": "center"}}>
-        <button className="button rounded no" style={{"backgroundColor": "red"}} onClick={ () => props.cardCallbacks.onDislike()}>
+        <button className="button rounded no" style={{"backgroundColor": "#af4154"}} onClick={ () => props.cardCallbacks.onDislike()}>
           <div className="buttonText" >Not for me</div>
         </button>
-        <button className="button rounded yes" style={{"backgroundColor": "green"}} onClick={ () => props.cardCallbacks.onLike()} >
+        <button className="button rounded yes" style={{"backgroundColor": "#019875"}} onClick={ () => props.cardCallbacks.onLike()} >
           <div className="buttonText">I like this</div>
         </button>
       </div>
