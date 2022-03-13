@@ -79,8 +79,7 @@ function App() {
   return (
     <div className="App">
       <h2 style={{ 'textAlign': "center" }}>Company Logo</h2>
-      {/* <Card cardProps={work} cardCallbacks={{ onDislike: dislike, onLike: like }} /> */}
-      { workList[0] !== undefined &&  <Card cardProps={work} cardCallbacks={{ onDislike: dislike, onLike: like }} />  }
+      {<Card cardProps={work} cardCallbacks={{ onDislike: dislike, onLike: like }} />  }
     </div>
   );
 

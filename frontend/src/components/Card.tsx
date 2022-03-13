@@ -1,5 +1,6 @@
 import React from 'react';
 import '../App.css';
+import {Work} from '../App'
 
 export type CardProps = {
   title: string,
@@ -15,7 +16,7 @@ export type CardCallbacks = {
 }
 
 
-export function Card (props: {cardProps: CardProps|undefined, cardCallbacks: CardCallbacks}) {
+export function Card (props: {cardProps: Work|undefined, cardCallbacks: CardCallbacks}) {
   if (props.cardProps === undefined) {
     return <div className="card center rounded">Card is undefined</div>
   } else {
