@@ -15,9 +15,12 @@ export type CardCallbacks = {
 }
 
 
-export function Card (props: {cardProps: CardProps, cardCallbacks: CardCallbacks}) {
+export function Card (props: {cardProps: CardProps|undefined, cardCallbacks: CardCallbacks}) {
+  if (props.cardProps === undefined) {
+    return <div className="card center rounded">Card is undefined</div>
+  } else {
   return (
-   
+      
       <div className="card center rounded">
       <div style={{'position': "relative"}}>
       <img src={props.cardProps.image} alt="Work" className="rounded" style={{"width": "100%"}} />
@@ -41,4 +44,5 @@ export function Card (props: {cardProps: CardProps, cardCallbacks: CardCallbacks
     </div>
 
   );
+}
 }

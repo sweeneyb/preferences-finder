@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import { Card } from './components/Card'
 
+export type Work = {
+  title: string,
+  artist: string,
+  image: string,
+  citation: string,
+}
 
-const works = [
+
+const works: Work[] = [
   {
     title: "A Sunday on La Grande Jatte-1884",
     artist: "Georges Seurat",
@@ -24,6 +31,7 @@ const works = [
   }
 
 ]
+
 
 function getRandomInt(max: number) {
   return Math.floor(Math.random() * max);
@@ -52,35 +60,43 @@ function sendMessage(rating: number, user: string|null, image: string) {
 
 
 function App() {
-  const [work, setWork] = useState(works[getRandomInt(3)])
-
   const params = new URLSearchParams(window.location.search)
   const user = params.get('user')
+  const [work, setWork] = useState<Work>()
+  const [workList, setWorkList] = useState<Work[]>([])
 
-  function dislike() {
-    console.log("dislike")
-    sendMessage( 0, user, work.image)
-    setWork(works[getRandomInt(3)])
-  }
-
-  function like() {
-    console.log("like")
-    sendMessage(5, user, work.image)
-    setWork(works[getRandomInt(3)])
-  }
-
-  
-
-
+  useEffect( () => {
+      console.log("in an effect.  Setting work.  workList.length: ", workList.length)
+      let combined = workList;
+      while( combined.length < 3) {
+        combined.push( works[getRandomInt(3)] )
+      }
+      setWork(workList[0])
+      setWorkList(combined)
+      console.log("in an effect.  Setting work.  workList.length: ", workList.length)
+    } , [ workList] )
 
   return (
     <div className="App">
       <h2 style={{ 'textAlign': "center" }}>Company Logo</h2>
-
-      <Card cardProps={work} cardCallbacks={{ onDislike: dislike, onLike: like }} />
-
+      {/* <Card cardProps={work} cardCallbacks={{ onDislike: dislike, onLike: like }} /> */}
+      { workList[0] !== undefined &&  <Card cardProps={work} cardCallbacks={{ onDislike: dislike, onLike: like }} />  }
     </div>
   );
+
+  function dislike() {
+    console.log("dislike")
+    sendMessage(0, user, work!.image)
+    setWorkList(workList.slice(1))
+  }
+
+  function like() {
+    console.log("like")
+    sendMessage(5, user, work!.image)
+    setWorkList(workList.slice(1))
+  }
+
+  
 }
 
 export default App;
