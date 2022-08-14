@@ -68,49 +68,12 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 	client, err := app.Firestore(ctx)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	defer client.Close()
-	iter := client.Collections(ctx)
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Fatalf("Failed to iterate: %v", err)
-		}
-		fmt.Println(doc.Path)
-	}
-	fmt.Println("querying collections")
-	// iter2 := client.Collection("ratings").Documents(ctx)
-	iter2 := client.Collection("collections").Doc("TksLlbd0JskZZ0Bj0jvH").Collections(ctx)
-	for {
-		collection, err := iter2.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Fatalf("Failed to iterate: %v", err)
-		}
-		docIter := collection.Documents(ctx)
-
-		docRef, err := docIter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Fatalf("Failed to iterate: %v", err)
-		}
-
-		work := newWorkFromDocRef(docRef)
-		fmt.Printf("citation: %v\n", work.Citation)
-	}
-
 	fsclient := Client{client}
+
 	collection := fsclient.GetCollection("first", ctx)
 	fmt.Printf("citation of 0th element: %v\n", collection.works[0].Citation)
 }
