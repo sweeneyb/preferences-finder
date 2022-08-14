@@ -12,30 +12,26 @@ import (
 )
 
 type Work struct {
-	props    map[string]string
-	Name     string
-	Citation string
-	ImageURL string
-	Artist   string
+	// props    map[string]string
+	Name     string `firestore:"name,omitempty"`
+	Citation string `firestore:"citation,omitempty"`
+	ImageURL string `firestore:"imageURL,omitempty"`
+	Artist   string `firestore:"artist,omitempty"`
 }
 
 type Collection struct {
 	works []Work
 }
 
-func newWork(mapping map[string]string) *Work {
-	w := Work{props: mapping}
+func newWork(ref *firestore.DocumentSnapshot) *Work {
+	var mapping map[string]string
+	ref.DataTo(&mapping)
+	w := Work{}
 	w.Name = mapping["name"]
 	w.Citation = mapping["citation"]
 	w.ImageURL = mapping["imageURL"]
 	w.Artist = mapping["artist"]
 	return &w
-}
-
-func newWorkFromDocRef(ref *firestore.DocumentSnapshot) *Work {
-	var doc map[string]string
-	ref.DataTo(&doc)
-	return newWork(doc)
 }
 
 type Client struct {
@@ -54,7 +50,7 @@ func (client Client) GetCollection(name string, ctx context.Context) *Collection
 		if err != nil {
 			log.Fatalf("Failed to iterate: %v", err)
 		}
-		works = append(works, *newWorkFromDocRef(docRef))
+		works = append(works, *newWork(docRef))
 	}
 	collection := Collection{works: works}
 	return &collection
@@ -76,4 +72,22 @@ func main() {
 
 	collection := fsclient.GetCollection("first", ctx)
 	fmt.Printf("citation of 0th element: %v\n", collection.works[0].Citation)
+
+	w := Work{Name: "Fishing Boats on the Beach at Les Saintes-Maries-de-la-Mer",
+		Artist:   "Vincent van Gogh",
+		Citation: "https://www.britannica.com/biography/Vincent-van-Gogh/images-videos#/media/1/237118/229363",
+		ImageURL: "/images/Fishing-Boats-on-the-Beach-oil-canvas-1888.jpg"}
+
+	collection.works = append(collection.works, w)
+	fmt.Printf("citation of 1th element: %v\n", collection.works[1].Citation)
+
+	fsclient.upsertWork("first", w, ctx)
+}
+
+func (client Client) upsertWork(collection string, w Work, ctx context.Context) {
+	_, _, err := client.Collection("collections").Doc("TksLlbd0JskZZ0Bj0jvH").Collection(collection).Add(ctx, w)
+	if err != nil {
+		// Handle any errors in an appropriate way, such as returning them.
+		log.Printf("An error has occurred: %s", err)
+	}
 }
