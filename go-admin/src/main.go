@@ -13,6 +13,7 @@ import (
 
 type Work struct {
 	// props    map[string]string
+	ID       string `firestore:"id,omitempty"`
 	Name     string `firestore:"name,omitempty"`
 	Citation string `firestore:"citation,omitempty"`
 	ImageURL string `firestore:"imageURL,omitempty"`
@@ -81,13 +82,20 @@ func main() {
 	collection.works = append(collection.works, w)
 	fmt.Printf("citation of 1th element: %v\n", collection.works[1].Citation)
 
-	fsclient.upsertWork("first", w, ctx)
+	id, err := fsclient.addWork("first", w, ctx)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	w.ID = *id
+	log.Printf("doc after add %v", w)
 }
 
-func (client Client) upsertWork(collection string, w Work, ctx context.Context) {
-	_, _, err := client.Collection("collections").Doc("TksLlbd0JskZZ0Bj0jvH").Collection(collection).Add(ctx, w)
+func (client Client) addWork(collection string, w Work, ctx context.Context) (*string, error) {
+	doc, _, err := client.Collection("collections").Doc("TksLlbd0JskZZ0Bj0jvH").Collection(collection).Add(ctx, w)
 	if err != nil {
-		// Handle any errors in an appropriate way, such as returning them.
 		log.Printf("An error has occurred: %s", err)
+		return nil, err
 	}
+	return &doc.ID, nil
+
 }
