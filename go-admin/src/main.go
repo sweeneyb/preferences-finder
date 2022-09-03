@@ -82,20 +82,20 @@ func main() {
 	collection.works = append(collection.works, w)
 	fmt.Printf("citation of 1th element: %v\n", collection.works[1].Citation)
 
-	id, err := fsclient.addWork("first", w, ctx)
+	err = fsclient.addWork("first", &w, ctx)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	w.ID = *id
 	log.Printf("doc after add %v", w)
 }
 
-func (client Client) addWork(collection string, w Work, ctx context.Context) (*string, error) {
+func (client Client) addWork(collection string, w *Work, ctx context.Context) error {
 	doc, _, err := client.Collection("collections").Doc("TksLlbd0JskZZ0Bj0jvH").Collection(collection).Add(ctx, w)
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
-		return nil, err
+		return err
 	}
-	return &doc.ID, nil
+	w.ID = doc.ID
+	return nil
 
 }
