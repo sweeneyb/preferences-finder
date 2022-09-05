@@ -1,7 +1,8 @@
 package main
 
 import (
-	pf "github.com/sweeneyb/preferences-finder/terraform-provider/preferences_finder"
+	// pf "github.com/sweeneyb/preferences-finder/terraform-provider/preferences_finder"
+	pf "terraform-provider/preferences_finder"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
