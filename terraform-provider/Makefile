@@ -1,9 +1,9 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
-HOSTNAME=hashicorp.com
-NAMESPACE=edu
+HOSTNAME=briansweeney-dev
+NAMESPACE=dev
 NAME=preferences-finder
 BINARY=terraform-provider-${NAME}.exe
-VERSION=0.3.1
+VERSION=0.0.1
 OS_ARCH=windows_amd64
 
 default: install
