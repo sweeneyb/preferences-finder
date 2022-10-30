@@ -23,7 +23,10 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fsclient := pflib.Client{client}
+	fsclient := pflib.Client{
+		FsClient: client,
+		RootDoc:  "TksLlbd0JskZZ0Bj0jvH",
+	}
 
 	collection := fsclient.GetCollection("first", ctx)
 	fmt.Printf("citation of 0th element: %v\n", collection.Works[0].Citation)

@@ -9,13 +9,14 @@ import (
 )
 
 type Client struct {
-	*firestore.Client
+	FsClient *firestore.Client
+	RootDoc  string
 }
 
 func (client Client) GetCollection(name string, ctx context.Context) *Collection {
 
 	var works []Work
-	docIter := client.Collection("collections").Doc("TksLlbd0JskZZ0Bj0jvH").Collection(name).Documents(ctx)
+	docIter := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(name).Documents(ctx)
 	for {
 		docRef, err := docIter.Next()
 		if err == iterator.Done {
@@ -33,7 +34,7 @@ func (client Client) GetCollection(name string, ctx context.Context) *Collection
 func (client Client) GetWorks(name string, ctx context.Context) []Work {
 
 	var works []Work
-	docIter := client.Collection("collections").Doc("TksLlbd0JskZZ0Bj0jvH").Collection(name).Documents(ctx)
+	docIter := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(name).Documents(ctx)
 	for {
 		docRef, err := docIter.Next()
 		if err == iterator.Done {

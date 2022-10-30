@@ -17,7 +17,8 @@ type Work struct {
 }
 
 type Collection struct {
-	Works []Work
+	Id    string `firestore:"id,omitempty"`
+	Works []Work `firestore:"works,omitempty"`
 }
 
 func newWork(ref *firestore.DocumentSnapshot) *Work {
@@ -32,7 +33,7 @@ func newWork(ref *firestore.DocumentSnapshot) *Work {
 }
 
 func (client Client) AddWork(collection string, w *Work, ctx context.Context) error {
-	doc, _, err := client.Collection("collections").Doc("TksLlbd0JskZZ0Bj0jvH").Collection(collection).Add(ctx, w)
+	doc, _, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection).Add(ctx, w)
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
 		return err
@@ -42,6 +43,6 @@ func (client Client) AddWork(collection string, w *Work, ctx context.Context) er
 }
 
 func (client Client) DeleteWork(collection string, w *Work, ctx context.Context) error {
-	_, err := client.Collection("collections").Doc("TksLlbd0JskZZ0Bj0jvH").Collection(collection).Doc(w.ID).Delete(ctx)
+	_, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection).Doc(w.ID).Delete(ctx)
 	return err
 }
