@@ -2,6 +2,7 @@ package pflib
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"cloud.google.com/go/firestore"
@@ -18,6 +19,7 @@ type Work struct {
 
 type Collection struct {
 	Id    string `firestore:"id,omitempty"`
+	Name  string `firestore:"name,omitempty"`
 	Works []Work `firestore:"works,omitempty"`
 }
 
@@ -46,3 +48,28 @@ func (client Client) DeleteWork(collection string, w *Work, ctx context.Context)
 	_, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection).Doc(w.ID).Delete(ctx)
 	return err
 }
+
+func newCollection(ref *firestore.DocumentSnapshot) *Collection {
+	var mapping map[string]interface{}
+	ref.DataTo(&mapping)
+	c := Collection{}
+	c.Id = fmt.Sprintf("%v", mapping["id"])
+
+	return &c
+}
+
+func (client Client) AddCollection(collection *Collection, ctx context.Context) error {
+	for _, value := range collection.Works {
+		err := client.AddWork(collection.Name, &value, ctx)
+		if err != nil {
+			log.Printf("An error has occurred: %s", err)
+			return err
+		}
+
+	}
+	return nil
+}
+
+// func (client Client) DeleteCollection(collection *Collection, ctx context.Context) error {
+// 	_, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection.Id).
+// }
