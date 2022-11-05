@@ -50,15 +50,18 @@ func main() {
 	// 	log.Fatalln(err)
 	// }
 
-	w := pflib.Work{Name: "Fishing Boats on the Beach at Les Saintes-Maries-de-la-Mer",
-		Artist:   "Vincent van Gogh",
-		Citation: "https://www.britannica.com/biography/Vincent-van-Gogh/images-videos#/media/1/237118/229363",
-		ImageURL: "/images/Fishing-Boats-on-the-Beach-oil-canvas-1888.jpg"}
+	// w := pflib.Work{Name: "Fishing Boats on the Beach at Les Saintes-Maries-de-la-Mer",
+	// 	Artist:   "Vincent van Gogh",
+	// 	Citation: "https://www.britannica.com/biography/Vincent-van-Gogh/images-videos#/media/1/237118/229363",
+	// 	ImageURL: "/images/Fishing-Boats-on-the-Beach-oil-canvas-1888.jpg"}
 
-	secondCol := pflib.Collection{
-		Id:    "",
-		Name:  "second",
-		Works: []pflib.Work{w},
-	}
-	fsclient.AddCollection(&secondCol, ctx)
+	// secondCol := pflib.Collection{
+	// 	Id:    "",
+	// 	Name:  "second",
+	// 	Works: []pflib.Work{w},
+	// }
+	// fsclient.AddCollection(&secondCol, ctx)
+
+	fsclient.DeleteCollection("second", ctx)
+
 }
