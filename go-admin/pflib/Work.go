@@ -17,6 +17,11 @@ type Work struct {
 	Artist   string `firestore:"artist,omitempty"`
 }
 
+type LocalWork struct {
+	Work
+	Path string
+}
+
 type Collection struct {
 	Id    string `firestore:"id,omitempty"`
 	Name  string `firestore:"name,omitempty"`
@@ -34,7 +39,7 @@ func newWork(ref *firestore.DocumentSnapshot) *Work {
 	return &w
 }
 
-func (client Client) AddWork(collection string, w *Work, ctx context.Context) error {
+func (client Client) AddWork(collection string, w *LocalWork, ctx context.Context) error {
 	doc, _, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection).Add(ctx, w)
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
@@ -56,18 +61,6 @@ func newCollection(ref *firestore.DocumentSnapshot) *Collection {
 	c.Id = fmt.Sprintf("%v", mapping["id"])
 
 	return &c
-}
-
-func (client Client) AddCollection(collection *Collection, ctx context.Context) error {
-	for _, value := range collection.Works {
-		err := client.AddWork(collection.Name, &value, ctx)
-		if err != nil {
-			log.Printf("An error has occurred: %s", err)
-			return err
-		}
-
-	}
-	return nil
 }
 
 // func (client Client) DeleteCollection(collection *Collection, ctx context.Context) error {
