@@ -19,10 +19,10 @@ func main() {
 	fmt.Print("Bugger off")
 
 	collection := fsclient.GetCollection("first", ctx)
-	fmt.Printf("citation of 0th element: %v\n", collection.Works[0].Citation)
+	fmt.Printf("citation of 0th element: %v\n", collection.Works[0].GetWork().Citation)
 
-	w := pflib.LocalWork{
-		Work: pflib.Work{
+	w := pflib.LocaleWorkGetter{
+		Work: &pflib.MinimalWork{
 			Name:     "Fishing Boats on the Beach at Les Saintes-Maries-de-la-Mer",
 			Artist:   "Vincent van Gogh",
 			Citation: "https://www.britannica.com/biography/Vincent-van-Gogh/images-videos#/media/1/237118/229363",
@@ -30,11 +30,13 @@ func main() {
 		},
 		Path: "..\\frontend\\public\\mages\\ishing-Boats-on-the-Beach-oil-canvas-1888.jpg"}
 
-	secondCol := pflib.Collection{
-		Id:    "",
-		Name:  "second",
-		Works: []pflib.Work{w},
-	}
-	fsclient.AddCollection(&secondCol, ctx)
+	// secondCol := pflib.Collection{
+	// 	Id:    "",
+	// 	Name:  "second",
+	// 	Works: []pflib.LocaleWorkGetter{w},
+	// }
+	// fsclient.AddCollection(&secondCol, ctx)
+
+	fsclient.AddCollection("second", []pflib.LocalWorkGetter{w}, ctx)
 
 }

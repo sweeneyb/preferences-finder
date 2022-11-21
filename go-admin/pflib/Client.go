@@ -2,6 +2,7 @@ package pflib
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -21,6 +22,9 @@ type Client struct {
 func NewClient(ctx context.Context) (client *Client, err error) {
 	conf := &firebase.Config{ProjectID: os.Getenv("project_id")}
 	app, err := firebase.NewApp(ctx, conf)
+	if err != nil {
+		return nil, err
+	}
 	fsClient, err := app.Firestore(ctx)
 	if err != nil {
 		return nil, err
@@ -42,7 +46,7 @@ func NewClient(ctx context.Context) (client *Client, err error) {
 
 func (client Client) GetCollection(name string, ctx context.Context) *Collection {
 
-	var works []Work
+	var works []WorkGetter
 	docIter := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(name).Documents(ctx)
 	for {
 		docRef, err := docIter.Next()
@@ -52,15 +56,15 @@ func (client Client) GetCollection(name string, ctx context.Context) *Collection
 		if err != nil {
 			log.Fatalf("Failed to iterate: %v", err)
 		}
-		works = append(works, *newWork(docRef))
+		works = append(works, SimpleWorkGetter{Work: newWork(docRef)})
 	}
 	collection := Collection{Works: works}
 	return &collection
 }
 
-func (client Client) GetWorks(collectionName string, ctx context.Context) []Work {
+func (client Client) GetWorks(collectionName string, ctx context.Context) []WorkGetter {
 
-	var works []Work
+	var works []WorkGetter
 	docIter := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collectionName).Documents(ctx)
 	for {
 		docRef, err := docIter.Next()
@@ -70,7 +74,7 @@ func (client Client) GetWorks(collectionName string, ctx context.Context) []Work
 		if err != nil {
 			log.Fatalf("Failed to iterate: %v", err)
 		}
-		works = append(works, *newWork(docRef))
+		works = append(works, SimpleWorkGetter{Work: newWork(docRef)})
 	}
 	return works
 }
@@ -90,14 +94,19 @@ func (client Client) DeleteCollection(collectionName string, ctx context.Context
 	return nil
 }
 
-func (client Client) AddCollection(collection *Collection, ctx context.Context) error {
-	for _, value := range collection.Works {
-		err := client.AddWork(collection.Name, &value, ctx)
+func (client Client) AddCollection(name string, lwgs []LocalWorkGetter, ctx context.Context) error {
+	coll := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(name)
+	for _, value := range lwgs {
+		ref, _, err := coll.Add(ctx, value.GetWork())
 		if err != nil {
 			log.Printf("An error has occurred: %s", err)
 			return err
 		}
-
+		tmp := value.GetWork()
+		tmp.ID = ref.ID
+		fmt.Printf("%v,%v", value.GetWork().ID, value.GetPath())
 	}
+
 	return nil
+
 }

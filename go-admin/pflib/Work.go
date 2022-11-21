@@ -8,7 +8,42 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
-type Work struct {
+type WorkGetter interface {
+	GetWork() *MinimalWork
+
+	// Name() string
+	// Citation() string
+	// ImageURL() string
+	// Artist() string
+}
+
+type LocalWorkGetter interface {
+	WorkGetter
+	GetPath() string
+}
+
+type SimpleWorkGetter struct {
+	Work *MinimalWork
+}
+
+func (sg SimpleWorkGetter) GetWork() *MinimalWork {
+	return sg.Work
+}
+
+type LocaleWorkGetter struct {
+	Work *MinimalWork
+	Path string
+}
+
+func (lwg LocaleWorkGetter) GetWork() *MinimalWork {
+	return lwg.Work
+}
+
+func (lwg LocaleWorkGetter) GetPath() string {
+	return lwg.Path
+}
+
+type MinimalWork struct {
 	// props    map[string]string
 	ID       string `firestore:"id,omitempty"`
 	Name     string `firestore:"name,omitempty"`
@@ -17,21 +52,20 @@ type Work struct {
 	Artist   string `firestore:"artist,omitempty"`
 }
 
-type LocalWork struct {
-	Work
-	Path string
+func (w MinimalWork) GetID() string {
+	return w.ID
 }
 
 type Collection struct {
-	Id    string `firestore:"id,omitempty"`
-	Name  string `firestore:"name,omitempty"`
-	Works []Work `firestore:"works,omitempty"`
+	Id    string       `firestore:"id,omitempty"`
+	Name  string       `firestore:"name,omitempty"`
+	Works []WorkGetter `firestore:"works,omitempty"`
 }
 
-func newWork(ref *firestore.DocumentSnapshot) *Work {
+func newWork(ref *firestore.DocumentSnapshot) *MinimalWork {
 	var mapping map[string]string
 	ref.DataTo(&mapping)
-	w := Work{}
+	w := MinimalWork{}
 	w.Name = mapping["name"]
 	w.Citation = mapping["citation"]
 	w.ImageURL = mapping["imageURL"]
@@ -39,18 +73,20 @@ func newWork(ref *firestore.DocumentSnapshot) *Work {
 	return &w
 }
 
-func (client Client) AddWork(collection string, w *LocalWork, ctx context.Context) error {
-	doc, _, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection).Add(ctx, w)
+func (client Client) AddWork(collection string, lwg LocalWorkGetter, ctx context.Context) error {
+	doc, _, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection).Add(ctx, lwg.GetWork())
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
 		return err
 	}
-	w.ID = doc.ID
+	tmp := lwg.GetWork()
+	tmp.ID = doc.ID
+	fmt.Printf("%v,%v", lwg.GetWork().ID, lwg.GetPath())
 	return nil
 }
 
-func (client Client) DeleteWork(collection string, w *Work, ctx context.Context) error {
-	_, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection).Doc(w.ID).Delete(ctx)
+func (client Client) DeleteWork(collection string, wg WorkGetter, ctx context.Context) error {
+	_, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection).Doc(wg.GetWork().ID).Delete(ctx)
 	return err
 }
 
@@ -62,7 +98,3 @@ func newCollection(ref *firestore.DocumentSnapshot) *Collection {
 
 	return &c
 }
-
-// func (client Client) DeleteCollection(collection *Collection, ctx context.Context) error {
-// 	_, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection.Id).
-// }
