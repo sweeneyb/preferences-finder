@@ -3,10 +3,13 @@ package pflib
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"time"
 
 	"cloud.google.com/go/firestore"
+	"cloud.google.com/go/storage"
 
 	firebase "firebase.google.com/go"
 	fsStorage "firebase.google.com/go/storage"
@@ -15,7 +18,7 @@ import (
 
 type Client struct {
 	FsClient *firestore.Client
-	foo      *fsStorage.Client
+	Storage  *fsStorage.Client
 	RootDoc  string
 }
 
@@ -37,7 +40,7 @@ func NewClient(ctx context.Context) (client *Client, err error) {
 
 	theClient := Client{
 		FsClient: fsClient,
-		foo:      storageClient,
+		Storage:  storageClient,
 		RootDoc:  "TksLlbd0JskZZ0Bj0jvH",
 	}
 
@@ -95,8 +98,36 @@ func (client Client) DeleteCollection(collectionName string, ctx context.Context
 }
 
 func (client Client) AddCollection(name string, lwgs []LocalWorkGetter, ctx context.Context) error {
+	// client.Storage.DefaultBucket().s
+
 	coll := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(name)
 	for _, value := range lwgs {
+		f, err := os.Open(value.GetPath())
+		if err != nil {
+			return fmt.Errorf("os.Open: %v", err)
+		}
+		defer f.Close()
+		ctx, cancel := context.WithTimeout(ctx, time.Second*50)
+		defer cancel()
+		bucket, err := client.Storage.Bucket(os.Getenv("project_id") + ".appspot.com")
+
+		if err != nil {
+			log.Printf("An error has occurred...: %s", err)
+			return err
+		}
+
+		o := bucket.Object("foo")
+		o = o.If(storage.Conditions{DoesNotExist: true})
+		wc := o.NewWriter(ctx)
+		if _, err = io.Copy(wc, f); err != nil {
+			return fmt.Errorf("io.Copy: %v", err)
+		}
+		if err := wc.Close(); err != nil {
+			return fmt.Errorf("Writer.Close: %v", err)
+		}
+		fmt.Printf("Blob %v uploaded.\n", "foo")
+
+		// below works
 		ref, _, err := coll.Add(ctx, value.GetWork())
 		if err != nil {
 			log.Printf("An error has occurred: %s", err)

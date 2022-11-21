@@ -28,15 +28,12 @@ func main() {
 			Citation: "https://www.britannica.com/biography/Vincent-van-Gogh/images-videos#/media/1/237118/229363",
 			ImageURL: "/images/Fishing-Boats-on-the-Beach-oil-canvas-1888.jpg",
 		},
-		Path: "..\\frontend\\public\\mages\\ishing-Boats-on-the-Beach-oil-canvas-1888.jpg"}
+		Path: "..\\frontend\\public\\images\\Fishing-Boats-on-the-Beach-oil-canvas-1888.jpg"}
 
-	// secondCol := pflib.Collection{
-	// 	Id:    "",
-	// 	Name:  "second",
-	// 	Works: []pflib.LocaleWorkGetter{w},
-	// }
-	// fsclient.AddCollection(&secondCol, ctx)
+	err = fsclient.AddCollection("second", []pflib.LocalWorkGetter{w}, ctx)
+	if err != nil {
+		log.Fatal(err)
 
-	fsclient.AddCollection("second", []pflib.LocalWorkGetter{w}, ctx)
+	}
 
 }
