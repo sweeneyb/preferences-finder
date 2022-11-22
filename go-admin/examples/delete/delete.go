@@ -4,28 +4,16 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	pflib "go-admin/pflib"
-
-	firebase "firebase.google.com/go"
 )
 
 func main() {
 	// Use a service account
 	ctx := context.Background()
-	conf := &firebase.Config{ProjectID: os.Getenv("project_id")}
-	app, err := firebase.NewApp(ctx, conf)
+	fsclient, err := pflib.NewClient(ctx)
 	if err != nil {
 		log.Fatalln(err)
-	}
-	client, err := app.Firestore(ctx)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	fsclient := pflib.Client{
-		FsClient: client,
-		RootDoc:  "TksLlbd0JskZZ0Bj0jvH",
 	}
 
 	fmt.Print("Bugger off")

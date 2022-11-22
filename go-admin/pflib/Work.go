@@ -89,12 +89,3 @@ func (client Client) DeleteWork(collection string, wg WorkGetter, ctx context.Co
 	_, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection).Doc(wg.GetWork().ID).Delete(ctx)
 	return err
 }
-
-func newCollection(ref *firestore.DocumentSnapshot) *Collection {
-	var mapping map[string]interface{}
-	ref.DataTo(&mapping)
-	c := Collection{}
-	c.Id = fmt.Sprintf("%v", mapping["id"])
-
-	return &c
-}

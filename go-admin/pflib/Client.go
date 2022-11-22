@@ -14,6 +14,10 @@ import (
 	firebase "firebase.google.com/go"
 	fsStorage "firebase.google.com/go/storage"
 	"google.golang.org/api/iterator"
+
+	"strings"
+
+	"github.com/google/uuid"
 )
 
 type Client struct {
@@ -92,14 +96,31 @@ func (client Client) DeleteCollection(collectionName string, ctx context.Context
 		if err != nil {
 			log.Fatalf("Failed to iterate: %v", err)
 		}
+		ref, err := docRef.Ref.Get(ctx)
+		if err != nil {
+			return err
+		}
+		MinimalWork := newWork(ref)
+		ctx, cancel := context.WithTimeout(ctx, time.Second*50)
+		defer cancel()
+		bucket, err := client.Storage.Bucket(os.Getenv("project_id") + ".appspot.com")
+		if err != nil {
+			log.Printf("An error has occurred...: %s", err)
+			return err
+		}
+
+		err = bucket.Object(strings.TrimPrefix(MinimalWork.ImageURL, "/")).Delete(ctx)
+		if err != nil {
+			log.Printf("An error has occurred...: %s", err)
+			return err
+		}
+
 		docRef.Ref.Delete(ctx)
 	}
 	return nil
 }
 
 func (client Client) AddCollection(name string, lwgs []LocalWorkGetter, ctx context.Context) error {
-	// client.Storage.DefaultBucket().s
-
 	coll := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(name)
 	for _, value := range lwgs {
 		f, err := os.Open(value.GetPath())
@@ -116,7 +137,8 @@ func (client Client) AddCollection(name string, lwgs []LocalWorkGetter, ctx cont
 			return err
 		}
 
-		o := bucket.Object("foo")
+		uuid := uuid.New()
+		o := bucket.Object(uuid.String())
 		o = o.If(storage.Conditions{DoesNotExist: true})
 		wc := o.NewWriter(ctx)
 		if _, err = io.Copy(wc, f); err != nil {
@@ -127,6 +149,7 @@ func (client Client) AddCollection(name string, lwgs []LocalWorkGetter, ctx cont
 		}
 		fmt.Printf("Blob %v uploaded.\n", "foo")
 
+		value.GetWork().ImageURL = fmt.Sprintf("/%v", uuid)
 		// below works
 		ref, _, err := coll.Add(ctx, value.GetWork())
 		if err != nil {
@@ -135,6 +158,7 @@ func (client Client) AddCollection(name string, lwgs []LocalWorkGetter, ctx cont
 		}
 		tmp := value.GetWork()
 		tmp.ID = ref.ID
+		// tmp.ImageURL = fmt.Sprintf("/%v", uuid)
 		fmt.Printf("%v,%v", value.GetWork().ID, value.GetPath())
 	}
 
