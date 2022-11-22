@@ -147,7 +147,6 @@ func (client Client) AddCollection(name string, lwgs []WorkWithLocalPath, ctx co
 		if err := wc.Close(); err != nil {
 			return fmt.Errorf("Writer.Close: %v", err)
 		}
-		fmt.Printf("Blob %v uploaded.\n", "foo")
 
 		value.ImageURL = fmt.Sprintf("/%v", uuid)
 		// below works

@@ -19,7 +19,7 @@ type MinimalWork struct {
 
 type WorkWithLocalPath struct {
 	MinimalWork
-	Path string
+	Path string `firestore:"-"`
 }
 
 func (w MinimalWork) GetID() string {
