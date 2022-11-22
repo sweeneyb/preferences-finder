@@ -8,41 +8,6 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
-type WorkGetter interface {
-	GetWork() *MinimalWork
-
-	// Name() string
-	// Citation() string
-	// ImageURL() string
-	// Artist() string
-}
-
-type LocalWorkGetter interface {
-	WorkGetter
-	GetPath() string
-}
-
-type SimpleWorkGetter struct {
-	Work *MinimalWork
-}
-
-func (sg SimpleWorkGetter) GetWork() *MinimalWork {
-	return sg.Work
-}
-
-type LocaleWorkGetter struct {
-	Work *MinimalWork
-	Path string
-}
-
-func (lwg LocaleWorkGetter) GetWork() *MinimalWork {
-	return lwg.Work
-}
-
-func (lwg LocaleWorkGetter) GetPath() string {
-	return lwg.Path
-}
-
 type MinimalWork struct {
 	// props    map[string]string
 	ID       string `firestore:"id,omitempty"`
@@ -52,14 +17,19 @@ type MinimalWork struct {
 	Artist   string `firestore:"artist,omitempty"`
 }
 
+type WorkWithLocalPath struct {
+	MinimalWork
+	Path string
+}
+
 func (w MinimalWork) GetID() string {
 	return w.ID
 }
 
 type Collection struct {
-	Id    string       `firestore:"id,omitempty"`
-	Name  string       `firestore:"name,omitempty"`
-	Works []WorkGetter `firestore:"works,omitempty"`
+	Id    string        `firestore:"id,omitempty"`
+	Name  string        `firestore:"name,omitempty"`
+	Works []MinimalWork `firestore:"works,omitempty"`
 }
 
 func newWork(ref *firestore.DocumentSnapshot) *MinimalWork {
@@ -73,19 +43,18 @@ func newWork(ref *firestore.DocumentSnapshot) *MinimalWork {
 	return &w
 }
 
-func (client Client) AddWork(collection string, lwg LocalWorkGetter, ctx context.Context) error {
-	doc, _, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection).Add(ctx, lwg.GetWork())
+func (client Client) AddWork(collection string, lwg WorkWithLocalPath, ctx context.Context) error {
+	doc, _, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection).Add(ctx, lwg.MinimalWork)
 	if err != nil {
 		log.Printf("An error has occurred: %s", err)
 		return err
 	}
-	tmp := lwg.GetWork()
-	tmp.ID = doc.ID
-	fmt.Printf("%v,%v", lwg.GetWork().ID, lwg.GetPath())
+	lwg.ID = doc.ID
+	fmt.Printf("%v,%v", lwg.ID, lwg.Path)
 	return nil
 }
 
-func (client Client) DeleteWork(collection string, wg WorkGetter, ctx context.Context) error {
-	_, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection).Doc(wg.GetWork().ID).Delete(ctx)
+func (client Client) DeleteWork(collection string, wg MinimalWork, ctx context.Context) error {
+	_, err := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collection).Doc(wg.ID).Delete(ctx)
 	return err
 }

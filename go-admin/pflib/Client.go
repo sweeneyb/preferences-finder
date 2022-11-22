@@ -53,7 +53,7 @@ func NewClient(ctx context.Context) (client *Client, err error) {
 
 func (client Client) GetCollection(name string, ctx context.Context) *Collection {
 
-	var works []WorkGetter
+	var works []MinimalWork
 	docIter := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(name).Documents(ctx)
 	for {
 		docRef, err := docIter.Next()
@@ -63,15 +63,15 @@ func (client Client) GetCollection(name string, ctx context.Context) *Collection
 		if err != nil {
 			log.Fatalf("Failed to iterate: %v", err)
 		}
-		works = append(works, SimpleWorkGetter{Work: newWork(docRef)})
+		works = append(works, *newWork(docRef))
 	}
 	collection := Collection{Works: works}
 	return &collection
 }
 
-func (client Client) GetWorks(collectionName string, ctx context.Context) []WorkGetter {
+func (client Client) GetWorks(collectionName string, ctx context.Context) []MinimalWork {
 
-	var works []WorkGetter
+	var works []MinimalWork
 	docIter := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collectionName).Documents(ctx)
 	for {
 		docRef, err := docIter.Next()
@@ -81,7 +81,7 @@ func (client Client) GetWorks(collectionName string, ctx context.Context) []Work
 		if err != nil {
 			log.Fatalf("Failed to iterate: %v", err)
 		}
-		works = append(works, SimpleWorkGetter{Work: newWork(docRef)})
+		works = append(works, *newWork(docRef))
 	}
 	return works
 }
@@ -120,10 +120,10 @@ func (client Client) DeleteCollection(collectionName string, ctx context.Context
 	return nil
 }
 
-func (client Client) AddCollection(name string, lwgs []LocalWorkGetter, ctx context.Context) error {
+func (client Client) AddCollection(name string, lwgs []WorkWithLocalPath, ctx context.Context) error {
 	coll := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(name)
 	for _, value := range lwgs {
-		f, err := os.Open(value.GetPath())
+		f, err := os.Open(value.Path)
 		if err != nil {
 			return fmt.Errorf("os.Open: %v", err)
 		}
@@ -149,17 +149,17 @@ func (client Client) AddCollection(name string, lwgs []LocalWorkGetter, ctx cont
 		}
 		fmt.Printf("Blob %v uploaded.\n", "foo")
 
-		value.GetWork().ImageURL = fmt.Sprintf("/%v", uuid)
+		value.ImageURL = fmt.Sprintf("/%v", uuid)
 		// below works
-		ref, _, err := coll.Add(ctx, value.GetWork())
+		ref, _, err := coll.Add(ctx, value)
 		if err != nil {
 			log.Printf("An error has occurred: %s", err)
 			return err
 		}
-		tmp := value.GetWork()
+		tmp := value
 		tmp.ID = ref.ID
 		// tmp.ImageURL = fmt.Sprintf("/%v", uuid)
-		fmt.Printf("%v,%v", value.GetWork().ID, value.GetPath())
+		fmt.Printf("%v,%v", value.ID, value.Path)
 	}
 
 	return nil
