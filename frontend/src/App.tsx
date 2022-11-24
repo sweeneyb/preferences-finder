@@ -2,6 +2,23 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import { Card } from './components/Card'
 
+import { initializeApp } from "firebase/app";
+import { collectionGroup, query, where, collection, doc, getDoc, getDocs, setDoc, getFirestore } from "firebase/firestore"; 
+
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID 
+}
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+// Initialize Cloud Firestore and get a reference to the service
+const db = getFirestore(app);
+
 export type Work = {
   title: string,
   artist: string,
@@ -57,6 +74,18 @@ function sendMessage(rating: number, user: string|null, image: string) {
   });
 }
 
+const collectionConverter = {
+  toFirestore: (collection: any) => {
+    console.log(collection)
+    return { "name": "foo"}
+  },
+  fromFirestore: (snapshot: any, options: any) => {
+    const data = snapshot.data(options);
+    console.log("data: ", data.name)
+  }
+
+}
+
 
 
 function App() {
@@ -75,6 +104,28 @@ function App() {
       setWorkList(combined)
       console.log("in an effect.  Setting work.  workList.length: ", workList.length)
     } , [ workList] )
+
+  useEffect(() => {
+    const fetchDoc = async () => {
+      const collections = await getDoc(doc( db, "collections", "TksLlbd0JskZZ0Bj0jvH").withConverter(collectionConverter))
+      console.log(collections.id, collections.data())
+    }
+    fetchDoc()
+      .catch(console.error)
+
+      
+    const fetchColl = async () => {
+      const museums = query(collectionGroup(db, 'works'), where('collections', 'array-contains-any', ['second']));
+      const querySnapshot = await getDocs(museums);
+      querySnapshot.forEach((doc) => {
+          console.log(doc.id, ' => ', doc.data());
+      });
+    }
+    fetchColl()
+      .catch(console.error)
+    
+      
+  }, [])    
 
   return (
     <div className="App">
