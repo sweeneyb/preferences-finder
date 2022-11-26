@@ -51,43 +51,42 @@ func NewClient(ctx context.Context) (client *Client, err error) {
 	return &theClient, nil
 }
 
-func (client Client) GetCollection(name string, ctx context.Context) *Collection {
+func (client Client) GetCollection(name string, ctx context.Context) (*Collection, error) {
 
-	var works []MinimalWork
-	docIter := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(name).Documents(ctx)
-	for {
-		docRef, err := docIter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Fatalf("Failed to iterate: %v", err)
-		}
-		works = append(works, *newWork(docRef))
+	works, err := client.GetWorks(name, ctx)
+	if err != nil {
+		return nil, err
 	}
 	collection := Collection{Works: works}
-	return &collection
+	return &collection, nil
 }
 
-func (client Client) GetWorks(collectionName string, ctx context.Context) []MinimalWork {
-
+func (client Client) GetWorks(collectionName string, ctx context.Context) ([]MinimalWork, error) {
 	var works []MinimalWork
-	docIter := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collectionName).Documents(ctx)
+	iter := client.FsClient.Collection("works").Where("Collections", "array-contains-any", []string{collectionName}).Documents(ctx)
 	for {
-		docRef, err := docIter.Next()
+		doc, err := iter.Next()
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
-			log.Fatalf("Failed to iterate: %v", err)
+			return nil, err
 		}
-		works = append(works, *newWork(docRef))
+		works = append(works, *newWork(doc))
 	}
-	return works
+	return works, nil
 }
 
 func (client Client) DeleteCollection(collectionName string, ctx context.Context) error {
-	docIter := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(collectionName).Documents(ctx)
+	docIter := client.FsClient.Collection("works").Where("Collections", "array-contains-any", []string{collectionName}).Documents(ctx)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
+	defer cancel()
+	bucket, err := client.Storage.Bucket(os.Getenv("project_id") + ".appspot.com")
+	if err != nil {
+		log.Printf("An error has occurred...: %s", err)
+		return err
+	}
+
 	for {
 		docRef, err := docIter.Next()
 		if err == iterator.Done {
@@ -100,28 +99,32 @@ func (client Client) DeleteCollection(collectionName string, ctx context.Context
 		if err != nil {
 			return err
 		}
-		MinimalWork := newWork(ref)
-		ctx, cancel := context.WithTimeout(ctx, time.Second*50)
-		defer cancel()
-		bucket, err := client.Storage.Bucket(os.Getenv("project_id") + ".appspot.com")
-		if err != nil {
-			log.Printf("An error has occurred...: %s", err)
-			return err
-		}
+		minimalWork := newWork(ref)
 
-		err = bucket.Object(strings.TrimPrefix(MinimalWork.ImageURL, "/")).Delete(ctx)
-		if err != nil {
-			log.Printf("An error has occurred...: %s", err)
-			return err
-		}
+		minimalWork.RemoveCollection(collectionName)
+		fmt.Printf("name: %v\n", minimalWork.Name)
+		fmt.Printf("url: %v\n", minimalWork.ImageURL)
 
-		docRef.Ref.Delete(ctx)
+		fmt.Printf("collections: %v\n", strings.Join(minimalWork.Collections, ", "))
+		fmt.Printf("coll size %v\n", len(minimalWork.Collections))
+		if len(minimalWork.Collections) == 0 {
+			err = bucket.Object(strings.TrimPrefix(minimalWork.ImageURL, "/")).Delete(ctx)
+			if err != nil {
+				log.Printf("An error has occurred....: %s", err)
+				return err
+			}
+
+			docRef.Ref.Delete(ctx)
+		} else {
+			docRef.Ref.Set(ctx, minimalWork)
+		}
+		// else update to remove the collection
 	}
 	return nil
 }
 
 func (client Client) AddCollection(name string, lwgs []WorkWithLocalPath, ctx context.Context) error {
-	coll := client.FsClient.Collection("collections").Doc(client.RootDoc).Collection(name)
+	coll := client.FsClient.Collection("works")
 	for _, value := range lwgs {
 		f, err := os.Open(value.Path)
 		if err != nil {
@@ -149,6 +152,9 @@ func (client Client) AddCollection(name string, lwgs []WorkWithLocalPath, ctx co
 		}
 
 		value.ImageURL = fmt.Sprintf("/%v", uuid)
+		if !value.IsInCollection(name) {
+			value.Collections = append(value.Collections, name)
+		}
 		// below works
 		ref, _, err := coll.Add(ctx, value)
 		if err != nil {

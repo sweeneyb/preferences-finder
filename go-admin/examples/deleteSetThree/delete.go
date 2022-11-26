@@ -16,8 +16,10 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	fmt.Print("Bugger off")
+	fmt.Println("Bugger off")
 
-	fsclient.DeleteCollection("third", ctx)
-
+	err = fsclient.DeleteCollection("third", ctx)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }

@@ -1,2 +1,5 @@
-$env:project_id='<project id>'
-go run .\main.go
+cmd shell:
+```
+set project_id='<project id>'
+go run .\examples\add\create.go
+```
