@@ -3,7 +3,8 @@ import './App.css';
 import { Card } from './components/Card'
 
 import { initializeApp } from "firebase/app";
-import { collectionGroup, query, where, collection, doc, getDoc, getDocs, setDoc, getFirestore } from "firebase/firestore"; 
+import { collectionGroup, query, where, collection, doc, getDoc, getDocs, setDoc, getFirestore} from "firebase/firestore"; 
+import {getStorage, ref, getDownloadURL} from "firebase/storage"
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -18,6 +19,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 // Initialize Cloud Firestore and get a reference to the service
 const db = getFirestore(app);
+const storage = getStorage();
 
 export type Work = {
   title: string,
@@ -79,11 +81,30 @@ const collectionConverter = {
     console.log(collection)
     return { "name": "foo"}
   },
-  fromFirestore: (snapshot: any, options: any) => {
+  fromFirestore: (snapshot: any, options: any): Work => {
     const data = snapshot.data(options);
-    console.log("data: ", data.name)
+    var work : Work = {
+      title: data.name,
+      artist: data.artist,
+      citation: data.citation,
+      // TODO convert this go dynamically grab the download URL https://firebase.google.com/docs/storage/web/download-files
+      image: "https://firebasestorage.googleapis.com/v0/b/preference-finder.appspot.com/o" +data.imageURL+"?alt=media"
+
+    }
+    return work
   }
 
+}
+
+async function getCollection() : Promise<Work[]> {
+  const collection : Work[] = []
+  const works = query(collectionGroup(db, 'works').withConverter(collectionConverter), where('collections', 'array-contains-any', ['third']));
+  const querySnapshot = await getDocs(works);
+  querySnapshot.forEach((doc) => {
+      // console.log("doc: ", doc.data())
+      collection.push(doc.data())
+  });
+  return Promise.resolve(collection)
 }
 
 
@@ -98,7 +119,10 @@ function App() {
       console.log("in an effect.  Setting work.  workList.length: ", workList.length)
       let combined = workList;
       while( combined.length < 3) {
-        combined.push( works[getRandomInt(3)] )
+        const which = getRandomInt(works.length)
+        const workToPush = works[which]
+        console.log("adding to stack: ", work?.title)
+        combined.push( workToPush )
       }
       setWork(workList[0])
       setWorkList(combined)
@@ -106,25 +130,13 @@ function App() {
     } , [ workList] )
 
   useEffect(() => {
-    const fetchDoc = async () => {
-      const collections = await getDoc(doc( db, "collections", "TksLlbd0JskZZ0Bj0jvH").withConverter(collectionConverter))
-      console.log(collections.id, collections.data())
+    const performAsync = async() => {
+      const collection = await getCollection()
+      console.log("collection: ", collection)
+      works.push(...collection)
     }
-    fetchDoc()
-      .catch(console.error)
-
-      
-    const fetchColl = async () => {
-      const museums = query(collectionGroup(db, 'works'), where('collections', 'array-contains-any', ['second']));
-      const querySnapshot = await getDocs(museums);
-      querySnapshot.forEach((doc) => {
-          console.log(doc.id, ' => ', doc.data());
-      });
-    }
-    fetchColl()
-      .catch(console.error)
-    
-      
+    performAsync()
+    .catch(console.error)      
   }, [])    
 
   return (

@@ -63,7 +63,7 @@ func (client Client) GetCollection(name string, ctx context.Context) (*Collectio
 
 func (client Client) GetWorks(collectionName string, ctx context.Context) ([]MinimalWork, error) {
 	var works []MinimalWork
-	iter := client.FsClient.Collection("works").Where("Collections", "array-contains-any", []string{collectionName}).Documents(ctx)
+	iter := client.FsClient.Collection("works").Where("collections", "array-contains-any", []string{collectionName}).Documents(ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -78,7 +78,7 @@ func (client Client) GetWorks(collectionName string, ctx context.Context) ([]Min
 }
 
 func (client Client) DeleteCollection(collectionName string, ctx context.Context) error {
-	docIter := client.FsClient.Collection("works").Where("Collections", "array-contains-any", []string{collectionName}).Documents(ctx)
+	docIter := client.FsClient.Collection("works").Where("collections", "array-contains-any", []string{collectionName}).Documents(ctx)
 	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
 	defer cancel()
 	bucket, err := client.Storage.Bucket(os.Getenv("project_id") + ".appspot.com")

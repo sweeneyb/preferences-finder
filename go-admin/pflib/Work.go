@@ -15,7 +15,7 @@ type MinimalWork struct {
 	Citation    string   `firestore:"citation,omitempty"`
 	ImageURL    string   `firestore:"imageURL,omitempty"`
 	Artist      string   `firestore:"artist,omitempty"`
-	Collections []string `firestore:Collections,omitempty`
+	Collections []string `firestore:"collections,omitempty"`
 }
 
 type WorkWithLocalPath struct {
