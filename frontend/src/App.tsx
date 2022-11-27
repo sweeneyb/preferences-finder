@@ -141,7 +141,7 @@ function App() {
 
   return (
     <div className="App">
-      <h2 style={{ 'textAlign': "center" }}>Company Logo</h2>
+      <h2 style={{ 'textAlign': "center" }}>Find the Art you <em>Love</em></h2>
       {<Card cardProps={work} cardCallbacks={{ onDislike: dislike, onLike: like }} />  }
     </div>
   );
