@@ -64,9 +64,13 @@ function getRandomInt(max: number) {
   return Math.floor(Math.random() * max);
 }
 
-function sendMessage(rating: number, user: string | null, image: string) {
+function sendMessage(rating: number, user: string | null, work: Work | undefined) {
   if (user === null) {
     console.log("no user; not logging")
+    return;
+  }
+  if (work === undefined ) {
+    console.log("undefined work; returning")
     return;
   }
   fetch("https://us-central1-preference-finder.cloudfunctions.net/api/api/v1/works/rate", {
@@ -79,7 +83,7 @@ function sendMessage(rating: number, user: string | null, image: string) {
     body: JSON.stringify({
       "user": user,
       "rating": rating,
-      "image": image
+      "work": work
     })
   });
 }
@@ -161,13 +165,13 @@ function App() {
 
   function dislike() {
     console.log("dislike")
-    sendMessage(0, user, work!.image)
+    sendMessage(0, user, work)
     setWorkList(workList.slice(1))
   }
 
   function like() {
     console.log("like")
-    sendMessage(5, user, work!.image)
+    sendMessage(5, user, work)
     setWorkList(workList.slice(1))
   }
 

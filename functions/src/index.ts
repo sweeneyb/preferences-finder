@@ -23,48 +23,18 @@ const main = express();
 app.use(cors({origin: "https://preference-finder.web.app"}));
 main.use(cors({origin: "https://preference-finder.web.app"}));
 
-interface Work {
-  artist: string
-  name: string,
+
+export type Work = {
+  title: string,
+  artist: string,
   image: string,
-  citation: string
+  citation: string,
+  id: string,
+  collection: string
 }
-
-const works: Work[] = [
-  {
-    artist: "Georges Seurat", name: "A Sunday on La Grande Jatte—1884",
-    citation: "https://www.britannica.com/biography/Georges-Seurat/images-videos#/media/1/536352/94613",
-    image: "/images/canvas-oil-La-Grande-Jatte-Georges-Seurat-1884.jpg",
-  },
-  {
-    artist: "Vincent van Gogh",
-    name: "Fishing Boats on the Beach at Les Saintes-Maries-de-la-Mer",
-    citation: "https://www.britannica.com/biography/Vincent-van-Gogh/images-videos#/media/1/237118/229363",
-    image: "/images/Fishing-Boats-on-the-Beach-oil-canvas-1888.jpg",
-  },
-  {
-    artist: "Adams, Ansel", name: "Canyon de Chelly",
-    citation: "https://www.britannica.com/biography/Ansel-Adams-American-photographer#/media/1/5091/97348",
-    image: "/images/photograph-Canyon-de-Chelly-Ansel-Adams.jpg",
-  }];
-
-function getRandomInt(max: number) {
-  return Math.floor(Math.random() * max);
-}
-
-// curl http://localhost:5001/preference-finder/us-central1/api/api/v1/works/random
-app.get("/works/random", async (req, res) =>
-  res.send(works[getRandomInt(3)])
-  // res.send("hi")
-);
-
-app.get("/works/all", async (req, res) =>
-  res.send(works)
-  // res.send("hi")
-);
 
 type Rating = {
-  image: string,
+  work: Work,
   user: string,
   rating: number
 }
@@ -94,10 +64,12 @@ app.post("/works/rate/", async (req, res) => {
     const rating: Rating = {
       rating: validateRating(validateNumber(req.body.rating)),
       user: validateString(req.body.user, "user"),
-      image: validateString( req.body.image, "image"),
+      work: req.body.work,
 
     };
     console.log("past validation", JSON.stringify(rating));
+    console.log("rating: ", rating.user, rating.work.collection,
+        rating.work.id);
     res.sendStatus(200);
   } catch (err) {
     console.log(err);
