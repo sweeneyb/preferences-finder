@@ -1,10 +1,7 @@
 module terraform-provider
 
-go 1.17
+go 1.19
 
-replace github.com/sweeneyb/preferences-finder/go-admin => C:/Users/sweeneyb/projects/preferences-finder/go-admin
-
-replace github.com/sweeneyb/preferences-finder/go-admin/pflib => C:/Users/sweeneyb/projects/preferences-finder/go-admin/pflib
 
 require (
 	firebase.google.com/go v3.13.0+incompatible
@@ -12,7 +9,12 @@ require (
 	github.com/sweeneyb/preferences-finder/go-admin v0.0.0-20220905154905-6a34809c1908
 )
 
-require cloud.google.com/go/storage v1.26.0 // indirect
+require (
+	cloud.google.com/go/storage v1.26.0 // indirect
+	github.com/kr/pretty v0.2.1 // indirect
+	github.com/kr/text v0.2.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+)
 
 require (
 	cloud.google.com/go v0.102.1 // indirect
@@ -55,14 +57,14 @@ require (
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/zclconf/go-cty v1.10.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
-	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e // indirect
-	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094 // indirect
-	golang.org/x/sys v0.0.0-20220624220833-87e55d714810 // indirect
+	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
+	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1 // indirect
+	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
-	google.golang.org/api v0.94.0 // indirect
+	google.golang.org/api v0.96.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220810155839-1856144b1d9c // indirect
-	google.golang.org/grpc v1.48.0 // indir80155839-185619c
+	google.golang.org/grpc v1.48.0 // indirect; indir80155839-185619c
 	google.golang.org/protobuf v1.28.1 // indirect
 )

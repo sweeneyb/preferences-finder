@@ -59,12 +59,13 @@ func dataSourceWorksRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		log.Fatalln(err)
 	}
-	client, err := app.Firestore(ctx)
+	_, err = app.Firestore(ctx)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fsclient := pflib.Client{client}
-	collection := fsclient.GetWorks("first", ctx)
+	// fsclient := pflib.Client{client}
+	fsclient, _ := pflib.NewClient(ctx)
+	collection, err := fsclient.GetWorks("first", ctx)
 	var diags diag.Diagnostics
 	d.Set("works", flattenWorksData(collection))
 
@@ -74,9 +75,9 @@ func dataSourceWorksRead(ctx context.Context, d *schema.ResourceData, m interfac
 	return diags
 }
 
-func flattenWorksData(works []pflib.Work) []interface{} {
+func flattenWorksData(works []pflib.MinimalWork) []interface{} {
 	if works != nil {
-		ois := make([]interface{}, len(works), len(works))
+		ois := make([]interface{}, len(works))
 
 		for i, work := range works {
 			oi := make(map[string]interface{})
