@@ -143,7 +143,7 @@ function App() {
     }
     setWork(workList[0])
     setWorkList(combined)
-    console.log("in an effect.  Setting work.  workList.length: ", workList.length)
+    console.log("in an effect.  Setting work...  workList.length: ", workList.length)
   }, [workList])
 
   useEffect(() => {
