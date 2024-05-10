@@ -112,9 +112,9 @@ function getConverter(name: string) {
 }
 
 
-async function getCollection(): Promise<Work[]> {
+async function getCollection(collection_param: string|null): Promise<Work[]> {
   const collection: Work[] = []
-  const collectionName = 'third'
+  const collectionName = collection_param||'third'
   const works = query(collectionGroup(db, 'works').withConverter(getConverter(collectionName)), where('collections', 'array-contains-any', [collectionName]));
   const querySnapshot = await getDocs(works);
   querySnapshot.forEach((doc) => {
@@ -129,6 +129,7 @@ async function getCollection(): Promise<Work[]> {
 function App() {
   const params = new URLSearchParams(window.location.search)
   const user = params.get('user')
+  const collection_param = params.get('collection')
   const [work, setWork] = useState<Work>()
   const [workList, setWorkList] = useState<Work[]>([])
 
@@ -148,7 +149,7 @@ function App() {
 
   useEffect(() => {
     const performAsync = async () => {
-      const collection = await getCollection()
+      const collection = await getCollection(collection_param)
       console.log("collection: ", collection)
       works.push(...collection)
     }
